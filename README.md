@@ -1,6 +1,8 @@
 # k8s-ldap-webhook-auth-minikube
 A Minikube demo showing LDAP-backed webhook token authentication for the Kubernetes API server using OpenLDAP and a Node.js webhook service
 
+> **📝 Note**: If you encounter authentication issues, please refer to [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detailed debugging steps and solutions.
+
 ## Implementing a custom Kubernetes authentication method
 
 ### Create new user entry for LDAP
@@ -56,7 +58,7 @@ clusters:
   - name: webhook-authn
     cluster:
       insecure-skip-tls-verify: true
-      server: https://d960-223-190-85-35.ngrok-free.app/auth
+      server: http://host.docker.internal:7443/auth
 users:
   - name: webhook-user
 contexts:
@@ -69,6 +71,8 @@ EOF
 exit
 exit
 ```
+
+**Note**: For local development, use `http://host.docker.internal:7443/auth` as the server URL. For production, replace with your ngrok URL from `http://localhost:4040`.
 
 #### Check from inside the Minikube VM
 ```sh
@@ -92,8 +96,11 @@ minikube stop
 
 ```bash
 minikube start \
-  --extra-config=apiserver.authentication-token-webhook-config-file=/var/lib/minikube/certs/webhook.yaml
+  --extra-config=apiserver.authentication-token-webhook-config-file=/var/lib/minikube/certs/webhook.yaml \
+  --extra-config=apiserver.authentication-token-webhook-version=v1
 ```
+
+**Important**: The `authentication-token-webhook-version=v1` flag is required to ensure compatibility with the TokenReview API version.
 
 ---
 
